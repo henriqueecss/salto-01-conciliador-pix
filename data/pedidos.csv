@@ -1,0 +1,24 @@
+pedido;data;cliente;itens;valor;canal
+P001;13/10/2026 09:12;Mariana Alves Costa;Bolo de cenoura com chocolate;R$ 65,00;Instagram
+P002;13/10/2026 09:40;João Pedro da Silva;Cento de brigadeiros;R$ 120,00;WhatsApp
+P003;13/10/2026 10:15;Maria da Conceição Ribeiro;Torta de limão;R$ 89,90;Instagram
+P004;13/10/2026 11:00;Ana Beatriz Rocha;Bolo de pote (4 un.);R$ 48,00;Instagram
+P005;13/10/2026 13:30;Lucas Ferreira;Brownie (6 un.);R$ 50,00;WhatsApp
+P006;13/10/2026 13:35;Fernanda Lima;Brownie (6 un.);R$ 50,00;Instagram
+P007;13/10/2026 14:20;Rafael Mendes;Bolo de aniversário 2 kg;R$ 180,00;WhatsApp
+P008;13/10/2026 15:05;Patrícia Gomes;Cento de beijinhos;R$ 110,00;Instagram
+P009;13/10/2026 16:00;Gustavo Henrique Prado;Torta de morango;R$ 95,00;WhatsApp
+P010;13/10/2026 16:45;Juliana Martins;Bolo de pote (2 un.);R$ 24,00;Instagram
+P011;13/10/2026 17:30;Bruno Carvalho;Cento de brigadeiros;R$ 120,00;WhatsApp
+P012;13/10/2026 18:10;Camila Teixeira;Torta de limão;R$ 89,90;Instagram
+P013;14/10/2026 08:50;Larissa Duarte;Bolo de fubá;R$ 40,00;WhatsApp
+P014;14/10/2026 09:30;Vinícius Araújo;Torta de morango;R$ 95,00;Instagram
+P015;14/10/2026 10:10;Thaís Nogueira;Cento de brigadeiros;R$ 120,00;Instagram
+P016;14/10/2026 11:25;Eduardo Santos;Torta de morango;R$ 95,00;WhatsApp
+P017;14/10/2026 13:00;Sofia Ramos;Bolo de pote (4 un.);R$ 48,00;Instagram
+P018;14/10/2026 14:30;Mateus Oliveira;Bolo de aniversário 2 kg;R$ 180,00;WhatsApp
+P019;14/10/2026 15:15;Beatriz Cunha;Brownie (6 un.);R$ 50,00;Instagram
+P020;14/10/2026 16:00;Leonardo Pires;Cento de beijinhos;R$ 110,00;WhatsApp
+P021;14/10/2026 17:20;Gabriela Moura;Torta de limão;R$ 89,90;Instagram
+P022;14/10/2026 18:00;Pedro Henrique Lopes;Bolo de cenoura com chocolate;R$ 65,00;WhatsApp
+P023;14/10/2026 19:10;Isabela Freitas;Cento de brigadeiros;R$ 120,00;Instagram

@@ -1,0 +1,32 @@
+pedido;id_transacao;resultado;dificuldade;observacao
+P001;E90400888202610130920ObKD3nz50vS;conciliado;basico;Nome e valor iguais, pago 8 min depois
+P002;E607011902026101310026sqQyA7PXXf;conciliado;intermediario;Banco abrevia o nome: JOAO P SILVA
+P003;E00000000202610131031Rj3MC60eX8O;conciliado;intermediario;Banco remove acentos e o 'da'
+P004;E18236120202610131109aOklIN4DVqb;suspeito;intermediario;Pagador diferente (mesmo sobrenome, provável parente): confirmar
+P005;E904008882026101313417Det7AFzMv7;conciliado;intermediario;Dois pedidos de R$ 50 no mesmo horário: o nome decide
+P006;E18236120202610131338roMKWoIGAtb;conciliado;intermediario;Pagou antes do P005; nome do banco tem sobrenome a mais
+P007;E18236120202610131422bGjUq5JuzNH;conciliado;bonus;Pagamento dividido: sinal de 50%
+P007;E90400888202610141610tvxYnpoozfF;conciliado;bonus;Pagamento dividido: restante no dia seguinte
+P008;E18236120202610131520KpINqakb20i;conciliado;basico;Primeiro Pix do pedido
+P008;E60746948202610131521fgIW2szmxqF;duplicado;intermediario;Mesmo cliente pagou de novo 32 s depois: devolver
+P009;;pendente;intermediario;Sem pagamento; cuidado para não pegar o Pix de R$ 95 do P014 ou P016
+P010;E00000000202610131658j8VcLOZpjFQ;suspeito;intermediario;Pix sem nome (só CPF mascarado); valor e horário batem
+P011;E60746948202610140815zTWRQdR5AbM;conciliado;intermediario;Pago no dia seguinte, dentro da janela de 48 h
+P012;E00360305202610131825lm1sGP0u4QS;suspeito;intermediario;Valor diferente: pagou R$ 89,00 de R$ 89,90
+P013;E18236120202610140841Gw9WW8BxKJN;conciliado;intermediario;Pix chegou 9 min antes do pedido ser registrado
+P014;E90400888202610140947Wk5KxToxCh0;conciliado;basico;Acento removido pelo banco
+P015;E90400888202610141012O47EoZa0JPi;conciliado;basico;Acento removido pelo banco
+P016;E00000000202610141140CGaegl25Svv;conciliado;intermediario;Nome do banco mais longo que o do pedido
+P017;E182361202026101413155rmZwmPhBKu;conciliado;basico;
+P018;E18236120202610151005CzmCkb9Dyhi;conciliado;intermediario;Pago no dia seguinte, dentro da janela de 48 h
+P019;E18236120202610141530UhkphqYKDXb;conciliado;basico;
+P020;E00360305202610141620hgB6weuzGYL;conciliado;basico;
+P021;E60746948202610141735wgvrXJLNfyW;conciliado;basico;
+P022;;pendente;basico;Sem pagamento
+P023;E904008882026101419129faNz8XmNC6;conciliado;basico;
+;E607469482026101320128LzI45AJMmW;sem_pedido;basico;Pix recebido sem pedido correspondente
+;E60746948202610142030HmH1wGi1K8R;sem_pedido;basico;Pix recebido sem pedido correspondente
+;E60701190202610131900wTZXFjc0w0W;ignorado;basico;Saída (pagamento a fornecedor)
+;E00000000202610141200IsKE6TIjzHR;ignorado;basico;Saída (pagamento a fornecedor)
+;LAN202610130001;ignorado;basico;Tarifa bancária
+;LAN202610140002;ignorado;intermediario;Crédito que não é Pix (rendimento)
