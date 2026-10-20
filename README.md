@@ -1,6 +1,6 @@
 # Conciliador de Pix
 
-Conciliador automático de pagamentos Pix para a Doce Ipê Confeitaria (fictícia). Projeto 1 de 15 do [Salto](https://github.com/henrique) — Carreira de Excelência Na Prática.
+Conciliador automático de pagamentos Pix para a Doce Ipê Confeitaria (fictícia).
 
 ## O problema
 
