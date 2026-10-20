@@ -4,7 +4,7 @@ Conciliador automático de pagamentos Pix para a Doce Ipê Confeitaria (fictíci
 
 ## Demo
 
-![Demo](demo.gif)
+![Demo](docs/demo.gif)
 
 ## O problema
 

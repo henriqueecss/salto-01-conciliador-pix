@@ -11,3 +11,6 @@ dist/
 build/
 *.egg-info/
 saida/
+CLAUDE.md
+PROMPT_INICIAL.md
+demo.tape
