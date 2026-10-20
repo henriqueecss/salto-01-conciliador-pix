@@ -2,6 +2,10 @@
 
 Conciliador automático de pagamentos Pix para a Doce Ipê Confeitaria (fictícia).
 
+## Demo
+
+![Demo](demo.gif)
+
 ## O problema
 
 A dona da confeitaria vende pelo Instagram e WhatsApp e recebe quase tudo por Pix. No fim do dia, confere o extrato bancário contra a planilha de pedidos na mão. Pix sem nome, nomes abreviados pelo banco e valores repetidos geram erro: cliente cobrado duas vezes, pedido entregue sem pagamento.
