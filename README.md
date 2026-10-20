@@ -81,6 +81,14 @@ python -m conciliador --pedidos data/pedidos.csv --extrato data/extrato.ofx
 python -m conciliador --pedidos data/pedidos.csv --extrato data/extrato.csv --saida resultado.csv --formato csv
 ```
 
+### Interface web (Streamlit)
+
+```bash
+streamlit run src/conciliador/app.py
+```
+
+Abre no navegador com upload de arquivos e tabela colorida de resultados.
+
 ### API
 
 ```bash
@@ -102,4 +110,4 @@ ruff check src/ tests/
 
 ## Stack
 
-- Python 3.12, pandas, rapidfuzz, scipy, FastAPI, pytest, ruff
+- Python 3.12, pandas, rapidfuzz, scipy, FastAPI, Streamlit, pytest, ruff
