@@ -38,13 +38,13 @@ def to_json(results: list[ReconciliationResult]) -> str:
 
 def to_table(results: list[ReconciliationResult]) -> str:
     lines = []
-    lines.append(f"{'Pedido':<8} {'Transação':<45} {'Resultado':<12}")
+    lines.append(f"{'Pedido':<8} {'Transacao':<45} {'Resultado':<12}")
     lines.append("-" * 65)
 
     for r in sorted(results, key=_sort_key):
-        pedido = r.order_id or "—"
+        pedido = r.order_id or "-"
         txn = r.transaction_id[:42] + "..." if len(r.transaction_id) > 45 else r.transaction_id
-        txn = txn or "—"
+        txn = txn or "-"
         label = _STATUS_LABELS.get(r.status, r.status)
         lines.append(f"{pedido:<8} {txn:<45} {label:<12}")
 
