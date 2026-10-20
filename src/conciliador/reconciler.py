@@ -1,3 +1,4 @@
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -7,6 +8,16 @@ from conciliador.matching import is_within_time_window, name_score
 from conciliador.models import Order, ReconciliationResult, Transaction
 from conciliador.normalization import is_masked_cpf, normalize_name
 from conciliador.parsers import parse_extrato_csv, parse_ofx, parse_pedidos_csv
+
+
+def _find_sum_combo(values: list[float], target: float) -> list[int] | None:
+    """Find indices of 2+ values that sum to target (within 0.01 tolerance)."""
+    for size in range(2, len(values) + 1):
+        for combo in combinations(range(len(values)), size):
+            if abs(sum(values[idx] for idx in combo) - target) < 0.01:
+                return list(combo)
+    return None
+
 
 _NAME_THRESHOLD = 80
 _VALUE_TOLERANCE = 1.00
@@ -132,6 +143,48 @@ def _reconcile(
                     status="duplicado",
                 ))
                 matched_txns.add(j)
+                break
+
+    # Split payment: check if 2+ unmatched Pix from the same payer sum to a pending order
+    unmatched_order_indices = [i for i in range(n_orders) if i not in matched_orders]
+    unmatched_txn_indices = [j for j in range(n_txns) if j not in matched_txns]
+
+    # Group unmatched transactions by normalized payer name
+    txn_by_payer: dict[str, list[int]] = {}
+    for j in unmatched_txn_indices:
+        name = txn_names[j]
+        if name:
+            txn_by_payer.setdefault(name, []).append(j)
+
+    for i in list(unmatched_order_indices):
+        order = orders[i]
+        for payer_name, txn_indices in txn_by_payer.items():
+            ns = name_score(payer_name, order_names[i])
+            if ns < _NAME_THRESHOLD:
+                continue
+            # Find subset of transactions in time window
+            eligible = [
+                j for j in txn_indices
+                if j not in matched_txns
+                and is_within_time_window(pix_credits[j].date, order.date)
+            ]
+            if len(eligible) < 2:
+                continue
+            # Check if any combination of 2+ sums to the order value
+            combo = _find_sum_combo(
+                [pix_credits[j].value for j in eligible], order.value
+            )
+            if combo is not None:
+                for idx_in_eligible in combo:
+                    j = eligible[idx_in_eligible]
+                    results.append(ReconciliationResult(
+                        order_id=order.id,
+                        transaction_id=pix_credits[j].id,
+                        status="conciliado",
+                        observation="Pagamento dividido",
+                    ))
+                    matched_txns.add(j)
+                matched_orders.add(i)
                 break
 
     # Unmatched orders → pendente

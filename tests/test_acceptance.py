@@ -75,7 +75,6 @@ def test_gabarito_basico_intermediario(expected):
     )
 
 
-@pytest.mark.xfail(reason="bonus: pagamento dividido ainda não implementado")
 @pytest.mark.parametrize(
     "expected",
     [r for r in _gabarito if r["dificuldade"] == "bonus"],

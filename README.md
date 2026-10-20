@@ -43,9 +43,8 @@ As decisões e alternativas descartadas estão documentadas em [DECISOES.md](DEC
 
 ## Resultados
 
-- **29/29** casos de dificuldade básico e intermediário acertados (100%)
-- **2** casos bônus (pagamento dividido) pendentes de implementação
-- **109** testes automatizados passando
+- **31/31** casos do gabarito acertados (100%) — básico, intermediário e bônus
+- **111** testes automatizados passando
 
 ## Como rodar
 
