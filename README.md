@@ -27,13 +27,16 @@ O sistema recebe o extrato do banco (CSV ou OFX) e a planilha de pedidos (CSV) e
 
 ```
 src/conciliador/
+  models.py         → Dataclasses: pedido, transação e resultado
   parsers.py        → Lê CSV e OFX, parseia valores BR e datas
   normalization.py  → Remove acentos, caixa alta, preposições
   matching.py       → Score de nomes (iniciais + token_set_ratio) e janela de tempo
   reconciler.py     → Pipeline: parsing → atribuição ótima (Húngaro) → classificação
   report.py         → Formata saída (CSV, JSON, tabela)
+  view.py           → Enriquece o resultado para a tela: valores, datas, diferença, motivo e totais
   cli.py            → Interface de linha de comando
-  api.py            → API FastAPI (POST /conciliar)
+  api.py            → API FastAPI: interface web, /api/conciliacao, /api/exemplo e /conciliar
+  static/           → Frontend em HTML, CSS e JS puros
 ```
 
 ### Decisões técnicas
@@ -43,12 +46,12 @@ As decisões e alternativas descartadas estão documentadas em [DECISOES.md](DEC
 1. **Nomes**: Heurística de expansão de iniciais + `rapidfuzz.fuzz.token_set_ratio` (limiar 80)
 2. **Casamento**: Algoritmo Húngaro (`scipy.optimize.linear_sum_assignment`) — atribuição globalmente ótima
 3. **Tolerância de valor**: R$1,00 fixo para classificar como suspeito
-4. **Interface**: CLI + API FastAPI
+4. **Interface**: CLI, API FastAPI e frontend próprio (HTML, CSS e JS) servido pela API
 
 ## Resultados
 
 - **31/31** casos do gabarito acertados (100%) — básico, intermediário e bônus
-- **111** testes automatizados passando
+- **132** testes automatizados passando
 
 ## Como rodar
 
@@ -108,4 +111,4 @@ ruff check src/ tests/
 
 ## Stack
 
-- Python 3.12, pandas, rapidfuzz, scipy, FastAPI, HTML/CSS/JS puros no frontend, pytest, ruff
+- Python 3.11+ (CI em 3.12), pandas, rapidfuzz, scipy, FastAPI, HTML/CSS/JS puros no frontend, pytest, ruff
