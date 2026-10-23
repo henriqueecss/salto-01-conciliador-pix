@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from conciliador.reconciler import reconcile
+from conciliador.reconciler import load_inputs, reconcile
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -69,3 +69,15 @@ class TestReconciler:
         results = _get_results()
         matches = _find(results, order_id="P013")
         assert any(r.status == "conciliado" for r in matches)
+
+
+class TestLoadInputs:
+    def test_csv_statement(self):
+        orders, transactions = load_inputs(DATA_DIR / "pedidos.csv", DATA_DIR / "extrato.csv")
+        assert orders[0].id == "P001"
+        assert any(t.is_pix_credit for t in transactions)
+
+    def test_ofx_statement(self):
+        orders, transactions = load_inputs(DATA_DIR / "pedidos.csv", DATA_DIR / "extrato.ofx")
+        assert len(orders) > 0
+        assert len(transactions) > 0

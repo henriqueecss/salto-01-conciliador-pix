@@ -24,15 +24,23 @@ _VALUE_TOLERANCE = 1.00
 _INF_COST = 1e9
 
 
-def reconcile(
+def load_inputs(
     orders_path: Path,
     statement_path: Path,
-) -> list[ReconciliationResult]:
+) -> tuple[list[Order], list[Transaction]]:
     orders = parse_pedidos_csv(orders_path)
     if str(statement_path).lower().endswith(".ofx"):
         transactions = parse_ofx(statement_path)
     else:
         transactions = parse_extrato_csv(statement_path)
+    return orders, transactions
+
+
+def reconcile(
+    orders_path: Path,
+    statement_path: Path,
+) -> list[ReconciliationResult]:
+    orders, transactions = load_inputs(orders_path, statement_path)
     return _reconcile(orders, transactions)
 
 
