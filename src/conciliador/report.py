@@ -18,7 +18,7 @@ def to_csv(results: list[ReconciliationResult]) -> str:
     output = io.StringIO()
     writer = csv.writer(output, delimiter=";")
     writer.writerow(["pedido", "id_transacao", "resultado"])
-    for r in sorted(results, key=_sort_key):
+    for r in sorted(results, key=sort_key):
         writer.writerow([r.order_id, r.transaction_id, r.status])
     return output.getvalue()
 
@@ -31,7 +31,7 @@ def to_json(results: list[ReconciliationResult]) -> str:
             "resultado": r.status,
             "observacao": r.observation,
         }
-        for r in sorted(results, key=_sort_key)
+        for r in sorted(results, key=sort_key)
     ]
     return json.dumps(data, ensure_ascii=False, indent=2)
 
@@ -41,7 +41,7 @@ def to_table(results: list[ReconciliationResult]) -> str:
     lines.append(f"{'Pedido':<8} {'Transacao':<45} {'Resultado':<12}")
     lines.append("-" * 65)
 
-    for r in sorted(results, key=_sort_key):
+    for r in sorted(results, key=sort_key):
         pedido = r.order_id or "-"
         txn = r.transaction_id[:42] + "..." if len(r.transaction_id) > 45 else r.transaction_id
         txn = txn or "-"
@@ -62,7 +62,7 @@ def to_table(results: list[ReconciliationResult]) -> str:
     return "\n".join(lines)
 
 
-def _sort_key(r: ReconciliationResult) -> tuple:
+def sort_key(r: ReconciliationResult) -> tuple:
     order_num = int(r.order_id[1:]) if r.order_id else 9999
     status_order = {
         "conciliado": 0, "suspeito": 1, "duplicado": 2,

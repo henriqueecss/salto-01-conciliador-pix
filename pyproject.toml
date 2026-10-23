@@ -14,7 +14,7 @@ dependencies = [
     "fastapi>=0.100",
     "uvicorn>=0.23",
     "python-multipart>=0.0.6",
-    "streamlit>=1.30",
+    "streamlit>=1.50",
 ]
 
 [project.optional-dependencies]

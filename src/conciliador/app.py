@@ -4,16 +4,11 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from conciliador.reconciler import reconcile
+from conciliador.reconciler import load_inputs, reconcile_data
+from conciliador.report import to_csv
+from conciliador.view import ATTENTION_STATUSES, build_rows, summarize
 
-STATUS_COLORS = {
-    "conciliado": "#16a34a",
-    "suspeito": "#d97706",
-    "duplicado": "#ea580c",
-    "pendente": "#dc2626",
-    "sem_pedido": "#7c3aed",
-    "ignorado": "#6b7280",
-}
+SAMPLE_DIR = Path(__file__).resolve().parents[2] / "data"
 
 STATUS_LABELS = {
     "conciliado": "Conciliado",
@@ -24,152 +19,179 @@ STATUS_LABELS = {
     "ignorado": "Ignorado",
 }
 
+STATUS_COLORS = {
+    "conciliado": "#16a34a",
+    "suspeito": "#d97706",
+    "duplicado": "#ea580c",
+    "pendente": "#dc2626",
+    "sem_pedido": "#7c3aed",
+    "ignorado": "#6b7280",
+}
+
+COLUMNS = {
+    "Pedido": "order_id",
+    "Cliente": "client",
+    "Valor do pedido": "order_value",
+    "Data do pedido": "order_date",
+    "Pagador (extrato)": "payer",
+    "Valor do Pix": "txn_value",
+    "Data do Pix": "txn_date",
+    "Diferença": "difference",
+    "Resultado": "status",
+    "Observação": "observation",
+}
+
 st.set_page_config(page_title="Conciliador de Pix", layout="wide")
 
-# Custom CSS
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 0.2rem;
-    }
-    .sub-header {
-        font-size: 1rem;
-        color: #6b7280;
-        margin-bottom: 2rem;
-    }
-    .stat-card {
-        border-radius: 8px;
-        padding: 16px 20px;
-        text-align: center;
-        border: 1px solid #e5e7eb;
-    }
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        line-height: 1.2;
-    }
-    .stat-label {
-        font-size: 0.85rem;
-        color: #6b7280;
-        margin-top: 4px;
-    }
-    .status-badge {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: white;
-    }
-</style>
-""", unsafe_allow_html=True)
 
-st.markdown('<div class="main-header">Conciliador de Pix</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="sub-header">Doce Ipe Confeitaria &mdash; '
-    "Reconciliacao automatica de pagamentos</div>",
-    unsafe_allow_html=True,
-)
+def brl(value: float) -> str:
+    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def load_uploaded(pedidos_file, extrato_file):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pedidos_path = Path(tmpdir) / pedidos_file.name
+        extrato_path = Path(tmpdir) / extrato_file.name
+        pedidos_path.write_bytes(pedidos_file.getvalue())
+        extrato_path.write_bytes(extrato_file.getvalue())
+        return load_inputs(pedidos_path, extrato_path)
+
+
+def to_frame(rows: list[dict]) -> pd.DataFrame:
+    frame = pd.DataFrame(rows)
+    frame["status"] = frame["status"].map(STATUS_LABELS)
+    frame = frame.rename(columns={v: k for k, v in COLUMNS.items()})
+    return frame[list(COLUMNS)]
+
+
+def show_table(rows: list[dict]):
+    if not rows:
+        st.info("Nenhum lançamento nesta categoria.")
+        return
+
+    def color_status(label):
+        status = next((k for k, v in STATUS_LABELS.items() if v == label), "")
+        return f"color: {STATUS_COLORS.get(status, 'inherit')}; font-weight: 600"
+
+    styled = to_frame(rows).style.map(color_status, subset=["Resultado"])
+    st.dataframe(
+        styled,
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Valor do pedido": st.column_config.NumberColumn(format="R$ %.2f"),
+            "Valor do Pix": st.column_config.NumberColumn(format="R$ %.2f"),
+            "Diferença": st.column_config.NumberColumn(format="R$ %+.2f"),
+            "Data do pedido": st.column_config.DatetimeColumn(format="DD/MM/YYYY HH:mm"),
+            "Data do Pix": st.column_config.DatetimeColumn(format="DD/MM/YYYY HH:mm"),
+        },
+    )
+
+
+st.title("Conciliador de Pix")
+st.caption("Doce Ipê Confeitaria · conferência automática entre extrato e pedidos")
 
 col_left, col_right = st.columns(2)
-
 with col_left:
     pedidos_file = st.file_uploader(
         "Planilha de pedidos",
         type=["csv"],
         help="CSV com colunas: pedido, data, cliente, itens, valor, canal",
     )
-
 with col_right:
     extrato_file = st.file_uploader(
-        "Extrato bancario",
+        "Extrato bancário",
         type=["csv", "ofx"],
         help="Extrato do banco em formato CSV ou OFX",
     )
 
+if SAMPLE_DIR.exists() and not (pedidos_file and extrato_file):
+    if st.button("Usar dados de exemplo"):
+        st.session_state["sample"] = True
+elif pedidos_file and extrato_file:
+    st.session_state["sample"] = False
+
 if pedidos_file and extrato_file:
-    with tempfile.TemporaryDirectory() as tmpdir:
-        pedidos_path = Path(tmpdir) / pedidos_file.name
-        extrato_path = Path(tmpdir) / extrato_file.name
-        pedidos_path.write_bytes(pedidos_file.getvalue())
-        extrato_path.write_bytes(extrato_file.getvalue())
-        results = reconcile(pedidos_path, extrato_path)
-
-    counts = {}
-    for r in results:
-        counts[r.status] = counts.get(r.status, 0) + 1
-
-    # Stats cards
-    st.markdown("---")
-    cols = st.columns(len(STATUS_COLORS))
-    for col, (status, color) in zip(cols, STATUS_COLORS.items()):
-        count = counts.get(status, 0)
-        label = STATUS_LABELS[status]
-        col.markdown(
-            f'<div class="stat-card">'
-            f'<div class="stat-value" style="color: {color}">{count}</div>'
-            f'<div class="stat-label">{label}</div>'
-            f"</div>",
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-
-    # Build table with colored status badges
-    rows = []
-    for r in results:
-        pedido = r.order_id if r.order_id else "-"
-        txn = r.transaction_id if r.transaction_id else "-"
-        color = STATUS_COLORS.get(r.status, "#6b7280")
-        label = STATUS_LABELS.get(r.status, r.status)
-        badge = f'<span class="status-badge" style="background-color:{color}">{label}</span>'
-        rows.append({
-            "Pedido": pedido,
-            "ID Transacao": txn,
-            "Resultado": badge,
-            "_sort_order": (0 if pedido != "-" else 1),
-            "_sort_num": int(pedido[1:]) if pedido != "-" else 9999,
-            "_status": r.status,
-        })
-
-    rows.sort(key=lambda x: (x["_sort_order"], x["_sort_num"], x["_status"]))
-
-    df_display = pd.DataFrame(rows)[["Pedido", "ID Transacao", "Resultado"]]
-
-    st.markdown(
-        df_display.to_html(escape=False, index=False, classes="dataframe"),
-        unsafe_allow_html=True,
-    )
-
-    # Download
-    df_export = pd.DataFrame([
-        {"pedido": r.order_id, "id_transacao": r.transaction_id, "resultado": r.status}
-        for r in results
-    ])
-    st.download_button(
-        label="Baixar resultado em CSV",
-        data=df_export.to_csv(index=False, sep=";"),
-        file_name="conciliacao.csv",
-        mime="text/csv",
-    )
-
+    orders, transactions = load_uploaded(pedidos_file, extrato_file)
+elif st.session_state.get("sample"):
+    orders, transactions = load_inputs(SAMPLE_DIR / "pedidos.csv", SAMPLE_DIR / "extrato.csv")
+    st.caption("Exibindo os dados de exemplo do projeto.")
 else:
-    st.markdown(
-        "Envie a planilha de pedidos e o extrato bancario acima para iniciar a conciliacao."
-    )
+    orders = None
 
+if orders is None:
+    st.write("Envie a planilha de pedidos e o extrato bancário para iniciar a conciliação.")
     with st.expander("Como funciona"):
-        st.markdown("""
-O sistema classifica cada pedido e transacao em:
-
+        st.markdown(
+            """
 | Resultado | Quando |
-|-----------|--------|
-| **Conciliado** | Valor exato e nome compativel dentro da janela de tempo |
-| **Suspeito** | Precisa de confirmacao humana (nome diferente ou valor proximo) |
-| **Duplicado** | Mesmo cliente pagou o mesmo pedido duas vezes |
+|---|---|
+| **Conciliado** | Valor exato e nome compatível dentro da janela de tempo |
+| **Suspeito** | Precisa de confirmação humana (nome diferente ou valor próximo) |
+| **Duplicado** | O mesmo cliente pagou de novo um pedido já conciliado |
 | **Pendente** | Pedido sem pagamento |
 | **Sem pedido** | Pix recebido sem pedido correspondente |
-| **Ignorado** | Transacao que nao e credito Pix (saida, tarifa, rendimento) |
-        """)
+| **Ignorado** | Lançamento que não é crédito Pix (saída, tarifa, rendimento) |
+"""
+        )
+    st.stop()
+
+results = reconcile_data(orders, transactions)
+rows = build_rows(results, orders, transactions)
+summary = summarize(rows)
+counts = summary["counts"]
+
+m1, m2, m3 = st.columns(3)
+m1.metric("Recebido e conciliado", brl(summary["reconciled_amount"]))
+m2.metric("Pedidos sem pagamento", brl(summary["pending_amount"]))
+m3.metric("Valor a revisar", brl(summary["review_amount"]))
+
+cols = st.columns(len(STATUS_LABELS))
+for col, (status, label) in zip(cols, STATUS_LABELS.items()):
+    col.metric(label, counts.get(status, 0))
+
+attention = [r for r in rows if r["status"] in ATTENTION_STATUSES]
+ignored = [r for r in rows if r["status"] == "ignorado"]
+
+tab_attention, tab_all, tab_ignored = st.tabs(
+    [f"Precisa de atenção ({len(attention)})", f"Todos ({len(rows) - len(ignored)})",
+     f"Ignorados ({len(ignored)})"]
+)
+
+with tab_attention:
+    st.caption("Confira o pedido ao lado do Pix antes de aprovar cada caso.")
+    show_table(attention)
+
+with tab_all:
+    f1, f2 = st.columns([2, 1])
+    selected = f1.multiselect(
+        "Filtrar por resultado",
+        [s for s in STATUS_LABELS if s != "ignorado"],
+        format_func=STATUS_LABELS.get,
+    )
+    query = f2.text_input("Buscar por nome").strip().upper()
+    filtered = [r for r in rows if r["status"] != "ignorado"]
+    if selected:
+        filtered = [r for r in filtered if r["status"] in selected]
+    if query:
+        filtered = [
+            r for r in filtered if query in r["client"].upper() or query in r["payer"].upper()
+        ]
+    show_table(filtered)
+
+with tab_ignored:
+    st.caption("Saídas, tarifas e créditos que não são Pix.")
+    st.dataframe(
+        pd.DataFrame(
+            [{"ID": r["transaction_id"], "Descrição": r["observation"]} for r in ignored]
+        ),
+        hide_index=True,
+        width="stretch",
+    )
+
+st.download_button(
+    "Baixar resultado em CSV",
+    data=to_csv(results),
+    file_name="conciliacao.csv",
+    mime="text/csv",
+)

@@ -41,10 +41,10 @@ def reconcile(
     statement_path: Path,
 ) -> list[ReconciliationResult]:
     orders, transactions = load_inputs(orders_path, statement_path)
-    return _reconcile(orders, transactions)
+    return reconcile_data(orders, transactions)
 
 
-def _reconcile(
+def reconcile_data(
     orders: list[Order],
     transactions: list[Transaction],
 ) -> list[ReconciliationResult]:

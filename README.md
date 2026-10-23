@@ -87,7 +87,7 @@ python -m conciliador --pedidos data/pedidos.csv --extrato data/extrato.csv --sa
 streamlit run src/conciliador/app.py
 ```
 
-Abre no navegador com upload de arquivos e tabela colorida de resultados.
+Abre no navegador com upload de arquivos (ou o botão "Usar dados de exemplo"), totais em R$ e abas separando o que precisa de atenção. Cada caso mostra o pedido ao lado do Pix para facilitar a decisão.
 
 ### API
 
