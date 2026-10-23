@@ -4,13 +4,7 @@ Conciliador automático de pagamentos Pix para a Doce Ipê Confeitaria (fictíci
 
 ## Demo
 
-Interface web:
-
-![Interface web](docs/demo-interface.gif)
-
-Linha de comando:
-
-![CLI](docs/demo.gif)
+![Demo](docs/demo-interface.gif)
 
 ## O problema
 
