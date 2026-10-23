@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conciliador de Pix</title>
+  <meta name="description" content="Confira o extrato do banco contra os pedidos da Doce Ipê Confeitaria.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23c0245a'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-name">Conciliador de Pix</span>
+      </div>
+      <span class="brand-shop">Doce Ipê Confeitaria</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="intro" class="hero">
+      <div class="hero-text">
+        <h1>Confira os Pix do dia em poucos segundos</h1>
+        <p>Envie a planilha de pedidos e o extrato do banco. O sistema aponta o que já foi pago, o que falta receber e o que precisa da sua conferência.</p>
+      </div>
+
+      <div class="uploads">
+        <label class="dropzone" id="drop-pedidos" for="file-pedidos">
+          <span class="step">1</span>
+          <span class="dz-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="dz-title">Planilha de pedidos</span>
+          <span class="dz-hint" data-default="Arraste o arquivo CSV aqui ou clique para escolher">Arraste o arquivo CSV aqui ou clique para escolher</span>
+          <input id="file-pedidos" type="file" accept=".csv">
+        </label>
+
+        <label class="dropzone" id="drop-extrato" for="file-extrato">
+          <span class="step">2</span>
+          <span class="dz-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="dz-title">Extrato do banco</span>
+          <span class="dz-hint" data-default="Arraste o arquivo CSV ou OFX aqui ou clique para escolher">Arraste o arquivo CSV ou OFX aqui ou clique para escolher</span>
+          <input id="file-extrato" type="file" accept=".csv,.ofx">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="btn-run" class="btn btn-primary" type="button" disabled>Conciliar</button>
+        <button id="btn-sample" class="btn btn-ghost" type="button">Ver com dados de exemplo</button>
+      </div>
+      <p id="error" class="alert" role="alert" hidden></p>
+    </section>
+
+    <section id="loading" class="loading" hidden aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Conferindo os lançamentos...</span>
+    </section>
+
+    <section id="results" hidden>
+      <div class="results-head">
+        <div>
+          <h1>Resultado da conciliação</h1>
+          <p id="results-sub" class="muted"></p>
+        </div>
+        <div class="results-actions">
+          <button id="btn-download" class="btn btn-ghost" type="button">Baixar CSV</button>
+          <button id="btn-reset" class="btn btn-primary" type="button">Nova conciliação</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <article class="kpi kpi-ok">
+          <span class="kpi-label">Recebido e conferido</span>
+          <strong id="kpi-ok" class="kpi-value"></strong>
+          <span id="kpi-ok-sub" class="kpi-sub"></span>
+        </article>
+        <article class="kpi kpi-bad">
+          <span class="kpi-label">Pedidos sem pagamento</span>
+          <strong id="kpi-pending" class="kpi-value"></strong>
+          <span id="kpi-pending-sub" class="kpi-sub"></span>
+        </article>
+        <article class="kpi kpi-warn">
+          <span class="kpi-label">Para você conferir</span>
+          <strong id="kpi-review" class="kpi-value"></strong>
+          <span id="kpi-review-sub" class="kpi-sub"></span>
+        </article>
+      </div>
+
+      <section class="panel">
+        <div id="bar" class="bar" role="img" aria-label="Proporção de lançamentos por resultado"></div>
+        <div id="legend" class="legend"></div>
+      </section>
+
+      <section id="attention-section">
+        <div class="section-head">
+          <h2>Precisa da sua atenção</h2>
+          <p class="muted">Compare o pedido com o Pix de cada caso antes de liberar a entrega.</p>
+        </div>
+        <div id="cards" class="cards"></div>
+      </section>
+
+      <section id="all-section">
+        <div class="section-head section-head-row">
+          <div>
+            <h2>Todos os lançamentos</h2>
+            <p class="muted">Pedidos e Pix, na ordem dos pedidos.</p>
+          </div>
+          <input id="search" class="search" type="search" placeholder="Buscar por cliente, pagador ou pedido" aria-label="Buscar">
+        </div>
+        <div id="chips" class="chips" role="group" aria-label="Filtrar por resultado"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th class="num">Valor do pedido</th>
+                <th>Pagador no extrato</th>
+                <th class="num">Valor do Pix</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <p id="empty" class="empty" hidden>Nenhum lançamento encontrado com esses filtros.</p>
+        </div>
+      </section>
+
+      <details id="ignored" class="ignored">
+        <summary><span id="ignored-title"></span></summary>
+        <p class="muted">Saídas, tarifas e créditos que não são Pix ficam fora da conciliação.</p>
+        <ul id="ignored-list"></ul>
+      </details>
+    </section>
+  </main>
+
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

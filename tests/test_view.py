@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from conciliador.reconciler import load_inputs, reconcile_data
-from conciliador.view import ATTENTION_STATUSES, build_rows, summarize
+from conciliador.view import build_rows, summarize
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -69,5 +69,27 @@ class TestSummarize:
         assert summary["reconciled_amount"] > 0
         assert summary["review_amount"] > 0
 
-    def test_attention_statuses(self):
-        assert set(ATTENTION_STATUSES) == {"suspeito", "duplicado", "sem_pedido"}
+
+
+class TestReason:
+    def test_every_row_has_a_reason(self, rows):
+        assert all(r["reason"] for r in rows)
+
+    def test_suspeito_with_exact_value_blames_the_name(self, rows):
+        exact = [
+            r for r in rows if r["status"] == "suspeito" and r["difference"] == 0.0
+        ]
+        assert exact
+        assert all("nome" in r["reason"] for r in exact)
+
+    def test_suspeito_with_different_value_blames_the_value(self, rows):
+        off = [
+            r for r in rows
+            if r["status"] == "suspeito" and r["difference"] not in (None, 0.0)
+        ]
+        assert off
+        assert all("valor" in r["reason"] for r in off)
+
+    def test_split_payment_reason(self, rows):
+        split = [r for r in rows if r["observation"] == "Pagamento dividido"]
+        assert all("dividido" in r["reason"] for r in split)

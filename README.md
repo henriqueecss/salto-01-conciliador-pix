@@ -81,19 +81,17 @@ python -m conciliador --pedidos data/pedidos.csv --extrato data/extrato.ofx
 python -m conciliador --pedidos data/pedidos.csv --extrato data/extrato.csv --saida resultado.csv --formato csv
 ```
 
-### Interface web (Streamlit)
-
-```bash
-streamlit run src/conciliador/app.py
-```
-
-Abre no navegador com upload de arquivos (ou o botão "Usar dados de exemplo"), totais em R$ e abas separando o que precisa de atenção. Cada caso mostra o pedido ao lado do Pix para facilitar a decisão.
-
-### API
+### Interface web
 
 ```bash
 uvicorn conciliador.api:app --reload
 ```
+
+Abra http://localhost:8000. A página aceita upload por arrastar (ou o botão "Ver com dados de exemplo"), mostra os totais em R$ e separa o que precisa de atenção. Cada caso aparece com o pedido ao lado do Pix e o motivo da classificação, e o tema claro ou escuro segue o do sistema.
+
+### API
+
+O servidor da interface web também expõe a API:
 
 ```bash
 curl -X POST http://localhost:8000/conciliar \
@@ -110,4 +108,4 @@ ruff check src/ tests/
 
 ## Stack
 
-- Python 3.12, pandas, rapidfuzz, scipy, FastAPI, Streamlit, pytest, ruff
+- Python 3.12, pandas, rapidfuzz, scipy, FastAPI, HTML/CSS/JS puros no frontend, pytest, ruff

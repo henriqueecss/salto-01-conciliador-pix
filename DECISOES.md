@@ -53,3 +53,11 @@
 **Descartadas**:
 - Só CLI: suficiente, mas perde a oportunidade de usar FastAPI.
 - Só API: exige subir servidor para uma tarefa batch diária.
+
+**Frontend**: página única em HTML, CSS e JS puros, servida pelo próprio FastAPI (`static/`), que consome `POST /api/conciliacao` e `GET /api/exemplo`. A API devolve as linhas já enriquecidas (cliente, valores, datas, diferença e o motivo da classificação), calculadas em `view.py` e cobertas por testes.
+
+**Por quê**: o usuário final precisa comparar o pedido com o Pix lado a lado para decidir os casos suspeitos, e isso pede controle total do layout. Sem build e sem dependência nova.
+
+**Descartadas**:
+- Streamlit: foi a primeira versão. Rápido de montar, mas o visual é padrão e personalizar exige CSS preso à estrutura interna do Streamlit, que muda entre versões.
+- Framework JS (React, Vue): exigiria Node e etapa de build para uma tela só.
