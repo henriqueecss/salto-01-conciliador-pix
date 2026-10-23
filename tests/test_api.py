@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -109,3 +110,25 @@ class TestWebInterface:
         )
         assert response.status_code == 422
         assert "detail" in response.json()
+
+
+class TestUploadFilenames:
+    def test_conciliar_ignores_path_in_filename(self):
+        escaped = Path(tempfile.gettempdir()) / "escape_pedidos.csv"
+        escaped.unlink(missing_ok=True)
+        try:
+            with (
+                open(DATA_DIR / "pedidos.csv", "rb") as pedidos,
+                open(DATA_DIR / "extrato.csv", "rb") as extrato,
+            ):
+                response = client.post(
+                    "/conciliar",
+                    files={
+                        "pedidos": ("../escape_pedidos.csv", pedidos, "text/csv"),
+                        "extrato": ("extrato.csv", extrato, "text/csv"),
+                    },
+                )
+            assert response.status_code == 200
+            assert not escaped.exists()
+        finally:
+            escaped.unlink(missing_ok=True)

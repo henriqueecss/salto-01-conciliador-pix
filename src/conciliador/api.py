@@ -29,11 +29,8 @@ async def conciliar(
     extrato: UploadFile = File(...),
 ):
     with tempfile.TemporaryDirectory() as tmpdir:
-        pedidos_path = Path(tmpdir) / pedidos.filename
-        extrato_path = Path(tmpdir) / extrato.filename
-
-        pedidos_path.write_bytes(await pedidos.read())
-        extrato_path.write_bytes(await extrato.read())
+        pedidos_path = await _save_upload(pedidos, tmpdir)
+        extrato_path = await _save_upload(extrato, tmpdir)
 
         results = reconcile(pedidos_path, extrato_path)
 
@@ -54,11 +51,8 @@ async def conciliacao(
     extrato: UploadFile = File(...),
 ):
     with tempfile.TemporaryDirectory() as tmpdir:
-        pedidos_path = Path(tmpdir) / Path(pedidos.filename).name
-        extrato_path = Path(tmpdir) / Path(extrato.filename).name
-
-        pedidos_path.write_bytes(await pedidos.read())
-        extrato_path.write_bytes(await extrato.read())
+        pedidos_path = await _save_upload(pedidos, tmpdir)
+        extrato_path = await _save_upload(extrato, tmpdir)
 
         try:
             return _conciliacao(pedidos_path, extrato_path)
@@ -75,6 +69,13 @@ def exemplo():
     if not SAMPLE_DIR.exists():
         raise HTTPException(status_code=404, detail="Dados de exemplo não encontrados.")
     return _conciliacao(SAMPLE_DIR / "pedidos.csv", SAMPLE_DIR / "extrato.csv")
+
+
+async def _save_upload(upload: UploadFile, directory: str) -> Path:
+    # Base name only: the client controls the filename and could send "../"
+    path = Path(directory) / Path(upload.filename).name
+    path.write_bytes(await upload.read())
+    return path
 
 
 def _conciliacao(pedidos_path: Path, extrato_path: Path) -> dict:
