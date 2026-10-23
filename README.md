@@ -111,4 +111,4 @@ ruff check src/ tests/
 
 ## Stack
 
-- Python 3.11+ (CI em 3.12), pandas, rapidfuzz, scipy, FastAPI, HTML/CSS/JS puros no frontend, pytest, ruff
+- Python 3.11+ (CI em 3.12), numpy, rapidfuzz, scipy, FastAPI, HTML/CSS/JS puros no frontend, pytest, ruff
